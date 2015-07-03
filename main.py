@@ -1,60 +1,83 @@
 import libtcodpy as libtcod
- 
-#actual size of the window
+from object import Object
+
+#############################################
+# Definitions
+#############################################
+
+# Actual size of the window
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
- 
-LIMIT_FPS = 20  #20 frames-per-second maximum
- 
- 
+
+PLAYER_INDEX = 0
+
+#############################################
+# Handle Keys
+#############################################
+
 def handle_keys():
     global playerx, playery
- 
-    #key = libtcod.console_check_for_keypress()  #real-time
+
     key = libtcod.console_wait_for_keypress(True)  #turn-based
- 
+
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         #Alt+Enter: toggle fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
- 
+
     elif key.vk == libtcod.KEY_ESCAPE:
         return True  #exit game
- 
+
     #movement keys
     if libtcod.console_is_key_pressed(libtcod.KEY_UP):
-        playery -= 1
- 
+        objects[PLAYER_INDEX].y -= 1
+
     elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
-        playery += 1
- 
+        objects[PLAYER_INDEX].y += 1
+
     elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
-        playerx -= 1
- 
+        objects[PLAYER_INDEX].x -= 1
+
     elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
-        playerx += 1
- 
- 
+        objects[PLAYER_INDEX].x += 1
+
+
 #############################################
 # Initialization & Main Loop
 #############################################
- 
-libtcod.console_set_custom_font('./data/fonts/arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'python/libtcod tutorial', False)
-libtcod.sys_set_fps(LIMIT_FPS)
- 
-playerx = SCREEN_WIDTH/2
-playery = SCREEN_HEIGHT/2
- 
+
+libtcod.console_set_custom_font('./fonts/arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'roguey', False)
+con = libtcod.console_new(SCREEN_WIDTH,SCREEN_HEIGHT)
+
+# Initialize the player
+player = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', libtcod.white)
+npc = Object(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2, '@', libtcod.yellow)
+
+# The list of all objects in the game
+objects = [player, npc]
+
+
+# The main iteration of the game.
 while not libtcod.console_is_window_closed():
- 
-    libtcod.console_set_default_foreground(0, libtcod.white)
-    libtcod.console_put_char(0, playerx, playery, '@', libtcod.BKGND_NONE)
- 
+
+    # Write the the created console
+    libtcod.console_set_default_foreground(con, libtcod.white)
+
+    # Draw the objects
+    for object in objects:
+        object.draw(con)
+
+    # Overlay the con over root
+    libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+
+    # Display the contents of the console to the screen
     libtcod.console_flush()
- 
-    libtcod.console_put_char(0, playerx, playery, ' ', libtcod.BKGND_NONE)
- 
-    #handle keys and exit game if needed
+
+    # Clear the objects so we don't have the same character printed again and again.
+    for object in objects:
+        object.clear(con)
+
+    #Handle keys and exit game if needed
     exit = handle_keys()
     if exit:
         break
