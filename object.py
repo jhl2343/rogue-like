@@ -7,9 +7,10 @@ class Object:
         self.char = char
         self.color = color
 
-    def move(self, dx, dy):
-        self.x += dx
-        self.y += dy
+    def move(self, map, dx, dy):
+        if not map[self.x + dx][self.y + dy].blocked:
+            self.x += dx
+            self.y += dy
 
     def draw(self, console):
         # Set the color and then draw the character that represents this object at its position
